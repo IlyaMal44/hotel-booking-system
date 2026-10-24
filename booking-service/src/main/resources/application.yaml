@@ -1,0 +1,92 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: booking-service
+  datasource:
+    url: jdbc:h2:mem:bookingdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: false
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:hotel-booking-system-jwt-secret-key-2026}
+    ttl: PT1H
+  seed:
+    enabled: true
+  hotel:
+    direct-base-url: ${HOTEL_DIRECT_URL:}
+    connect-timeout: 1s
+    read-timeout: 2s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    sampling:
+      probability: 1.0
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [${spring.application.name}] [traceId=%X{traceId:-}] [correlationId=%X{correlationId:-}] [bookingId=%X{bookingId:-}] %logger{36} - %msg%n"
+
+resilience4j:
+  retry:
+    instances:
+      hotelService:
+        maxAttempts: 3
+        waitDuration: 200ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - com.example.booking.exception.HotelTransientException
+        ignoreExceptions:
+          - com.example.booking.exception.RoomConflictException
+          - com.example.booking.exception.NotFoundException
+          - com.example.booking.exception.BadRequestException
+  circuitbreaker:
+    instances:
+      hotelService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+        recordExceptions:
+          - com.example.booking.exception.HotelTransientException
+        ignoreExceptions:
+          - com.example.booking.exception.RoomConflictException
+          - com.example.booking.exception.NotFoundException
+          - com.example.booking.exception.BadRequestException
+  timelimiter:
+    instances:
+      hotelService:
+        timeoutDuration: 2s
+        cancelRunningFuture: true

@@ -1,0 +1,30 @@
+app:
+  seed:
+    enabled: false
+  hotel:
+    connect-timeout: 500ms
+    read-timeout: 300ms
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+spring:
+  cloud:
+    discovery:
+      enabled: false
+
+resilience4j:
+  retry:
+    instances:
+      hotelService:
+        maxAttempts: 3
+        waitDuration: 10ms
+        enableExponentialBackoff: false
+  timelimiter:
+    instances:
+      hotelService:
+        timeoutDuration: 2s
+        cancelRunningFuture: true

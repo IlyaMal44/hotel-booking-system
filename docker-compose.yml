@@ -1,0 +1,54 @@
+services:
+  eureka:
+    build:
+      context: .
+      args:
+        MODULE: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      EUREKA_INSTANCE_HOSTNAME: eureka
+
+  hotel-service:
+    build:
+      context: .
+      args:
+        MODULE: hotel-service
+    ports:
+      - "8082:8082"
+    environment:
+      EUREKA_URI: http://eureka:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: hotel-service
+      JWT_SECRET: hotel-booking-system-jwt-secret-key-2026
+    depends_on:
+      - eureka
+
+  booking-service:
+    build:
+      context: .
+      args:
+        MODULE: booking-service
+    ports:
+      - "8081:8081"
+    environment:
+      EUREKA_URI: http://eureka:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: booking-service
+      JWT_SECRET: hotel-booking-system-jwt-secret-key-2026
+    depends_on:
+      - eureka
+
+  api-gateway:
+    build:
+      context: .
+      args:
+        MODULE: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_URI: http://eureka:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: api-gateway
+      JWT_SECRET: hotel-booking-system-jwt-secret-key-2026
+    depends_on:
+      - eureka
+      - hotel-service
+      - booking-service

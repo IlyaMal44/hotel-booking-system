@@ -1,0 +1,9 @@
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+app:
+  jwt:
+    secret: hotel-booking-system-jwt-secret-key-2026
