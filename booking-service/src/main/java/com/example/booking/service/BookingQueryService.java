@@ -33,6 +33,7 @@ public class BookingQueryService {
     }
 
     @Transactional(readOnly = true)
+    /** Отдает бронь владельцу или админу */
     public BookingResponse get(Long id, String username, boolean admin) {
         Booking booking = bookingRepository.findWithUserById(id)
                 .orElseThrow(() -> new com.example.booking.exception.NotFoundException("Booking not found"));
@@ -43,11 +44,13 @@ public class BookingQueryService {
     }
 
     @Transactional(readOnly = true)
+    /** История броней только текущего пользователя */
     public Page<BookingResponse> history(String username, Pageable pageable) {
         return bookingRepository.findByUserUsername(username, pageable).map(bookingMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
+    /** Свободные номера на даты, сначала с меньшим timesBooked */
     public List<RoomView> recommend(LocalDate startDate, LocalDate endDate, Long hotelId) {
         StayDates.check(startDate, endDate);
         return roomSelectionService.recommend(new CreateBookingRequest(null, startDate, endDate, null, hotelId, true));

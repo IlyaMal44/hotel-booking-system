@@ -48,6 +48,7 @@ public class BookingSagaService {
         this.bookingMapper = bookingMapper;
     }
 
+    /** Создает бронь: пишет PENDING, подтверждает номер у отеля и при сбое отменяет */
     public BookingCreateResult create(CreateBookingRequest request, String username) {
         StayDates.check(request.startDate(), request.endDate());
         Optional<Booking> existing = bookingRepository.findByRequestId(request.requestId().toString());
@@ -104,6 +105,7 @@ public class BookingSagaService {
         throw new ConflictException("No available room for the selected dates");
     }
 
+    /** Отменяет свою бронь и снимает блокировку номера в hotel-service */
     public BookingResponse cancel(Long id, String username, boolean admin) {
         Booking booking = transactions.required(id);
         assertOwner(booking, username, admin);
@@ -121,6 +123,7 @@ public class BookingSagaService {
         }
     }
 
+    /** Повтор того же requestId: возвращает итог или доделывает незавершенный PENDING */
     private BookingResponse resume(Booking booking) {
         MDC.put(Traces.BOOKING_MDC, String.valueOf(booking.getId()));
         try {
@@ -137,6 +140,7 @@ public class BookingSagaService {
         }
     }
 
+    /** Еще раз просит отель подтвердить уже созданный PENDING */
     private BookingResponse continuePending(Booking booking) {
         log.info("bookingId={} state=PENDING result=RESUME requestId={}", booking.getId(), booking.getRequestId());
         try {
@@ -161,6 +165,7 @@ public class BookingSagaService {
         }
     }
 
+    /** Снимает блокировку номера, если на этапе confirm она успела встать */
     private void compensate(Long roomId, UUID requestId, Long bookingId) {
         try {
             hotelPort.release(new ReleaseCommand(roomId, requestId, bookingId));
@@ -171,10 +176,12 @@ public class BookingSagaService {
         }
     }
 
+    /** Переводит бронь в CANCELLED отдельной транзакцией */
     private void cancelQuietly(Long bookingId) {
         transactions.markCancelled(bookingId);
     }
 
+    /** Пускает к брони владельца или админа */
     private void assertOwner(Booking booking, String username, boolean admin) {
         if (!admin && !booking.getUser().getUsername().equals(username)) {
             throw new com.example.booking.exception.ApiException(HttpStatus.FORBIDDEN, "Booking belongs to another user");

@@ -69,6 +69,7 @@ public class HotelClient implements HotelPort {
     }
 
     @Override
+    /** Запрашивает у отеля список номеров для автоподбора */
     public List<RoomView> recommend(Long hotelId, LocalDate startDate, LocalDate endDate) {
         HttpHeaders headers = captureHeaders();
         return invoke(() -> restClient.get()
@@ -84,6 +85,7 @@ public class HotelClient implements HotelPort {
     }
 
     @Override
+    /** Просит отель заблокировать номер на даты брони */
     public ConfirmView confirm(ConfirmCommand command) {
         HttpHeaders headers = captureHeaders();
         headers.set(Traces.BOOKING_HEADER, String.valueOf(command.bookingId()));
@@ -97,6 +99,7 @@ public class HotelClient implements HotelPort {
     }
 
     @Override
+    /** Просит отель снять блокировку номера */
     public void release(ReleaseCommand command) {
         HttpHeaders headers = captureHeaders();
         headers.set(Traces.BOOKING_HEADER, String.valueOf(command.bookingId()));
@@ -109,6 +112,7 @@ public class HotelClient implements HotelPort {
                 .toBodilessEntity());
     }
 
+    /** Гоняет вызов через circuit breaker, затем через повторы */
     private <T> T invoke(Supplier<T> action) {
         Supplier<T> timed = () -> callWithTimeout(action);
         Supplier<T> decorated = CircuitBreaker.decorateSupplier(circuitBreaker, Retry.decorateSupplier(retry, timed));
@@ -120,6 +124,7 @@ public class HotelClient implements HotelPort {
         }
     }
 
+    /** Ограничивает один вызов по времени и переводит обрыв сети в ошибку для повтора */
     private <T> T callWithTimeout(Supplier<T> action) {
         try {
             return timeLimiter.executeFutureSupplier(() -> CompletableFuture.supplyAsync(() -> {
@@ -149,6 +154,7 @@ public class HotelClient implements HotelPort {
         }
     }
 
+    /** 409 и 404 не повторяем, 5xx отдаем на retry */
     private static void mapStatus(org.springframework.http.HttpRequest request, ClientHttpResponse response) throws IOException {
         String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
         int status = response.getStatusCode().value();

@@ -16,6 +16,7 @@ public class RoomGuardWriter {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    /** Вставляет room_guards в отдельной транзакции, если строки еще нет */
     public void insertIfAbsent(Long roomId) {
         if (!roomGuardRepository.existsById(roomId)) {
             roomGuardRepository.saveAndFlush(new RoomGuard(roomId));

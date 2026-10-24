@@ -12,6 +12,7 @@ public class RoomGuardCoordinator {
         this.roomGuardWriter = roomGuardWriter;
     }
 
+    /** Гарантирует строку-замок по номеру, гонка на вставке тут не роняет основную транзакцию */
     public void ensure(Long roomId) {
         try {
             roomGuardWriter.insertIfAbsent(roomId);

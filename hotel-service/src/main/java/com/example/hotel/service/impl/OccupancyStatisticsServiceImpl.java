@@ -27,6 +27,7 @@ public class OccupancyStatisticsServiceImpl implements OccupancyStatisticsServic
 
     @Override
     @Transactional(readOnly = true)
+    /** Считает загруженность номеров: простой, среднее и самый занятый номер */
     public OccupancyStatisticsResponse statistics(Long hotelId) {
         Map<Long, Long> activeHolds = new HashMap<>();
         for (Object[] row : roomHoldRepository.countActiveByRoom()) {

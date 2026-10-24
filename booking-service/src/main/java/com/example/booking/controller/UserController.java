@@ -53,6 +53,7 @@ public class UserController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
+    /** Админ создает пользователя с выбранной ролью */
     public ResponseEntity<UserResponse> create(@Valid @RequestBody AdminCreateUserRequest request) {
         return ResponseEntity.status(201).body(userAccountService.createByAdmin(request));
     }
@@ -60,6 +61,7 @@ public class UserController {
     @PatchMapping
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
+    /** Админ меняет пароль или роль, id лежит в теле */
     public UserResponse update(@Valid @RequestBody UpdateUserRequest request) {
         return userAccountService.update(request);
     }
@@ -67,6 +69,7 @@ public class UserController {
     @DeleteMapping
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
+    /** Админ удаляет пользователя по id из query */
     public ResponseEntity<Void> delete(@RequestParam Long id, @AuthenticationPrincipal Jwt jwt) {
         userAccountService.delete(id, jwt.getSubject());
         return ResponseEntity.noContent().build();
@@ -75,6 +78,7 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
+    /** Список пользователей для админа */
     public Page<UserResponse> list(@PageableDefault(size = 20) Pageable pageable) {
         return userAccountService.list(pageable);
     }

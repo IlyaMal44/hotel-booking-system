@@ -30,6 +30,7 @@ public class TokenService {
         this.ttl = ttl;
     }
 
+    /** Собирает JWT с ролью и сроком жизни из настроек */
     public AuthResponse issue(User user) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()

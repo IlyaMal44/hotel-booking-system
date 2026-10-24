@@ -7,6 +7,7 @@ import com.example.booking.exception.RoomConflictException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,6 +50,7 @@ class HotelClientResilienceTest {
     }
 
     @Test
+    @DisplayName("Два ответа 500, третий успешный - вызов повторяется и в итоге проходит")
     void retriesTransientErrorsAndThenSucceeds() {
         SERVER.enqueue(new MockResponse().setResponseCode(500).setBody("down"));
         SERVER.enqueue(new MockResponse().setResponseCode(500).setBody("down"));
@@ -67,6 +69,7 @@ class HotelClientResilienceTest {
     }
 
     @Test
+    @DisplayName("Отель молчит дольше таймаута - после трех попыток отдаем ошибку")
     void timeoutStopsAfterConfiguredAttempts() {
         for (int attempt = 0; attempt < 3; attempt++) {
             SERVER.enqueue(new MockResponse().setHeadersDelay(2, TimeUnit.SECONDS).setResponseCode(200).setBody("{}"));
@@ -78,6 +81,7 @@ class HotelClientResilienceTest {
     }
 
     @Test
+    @DisplayName("409 не повторяем, это занятый номер, а не сбой сети")
     void conflictIsNotRetried() {
         SERVER.enqueue(new MockResponse().setResponseCode(409).setBody("taken"));
         int before = SERVER.getRequestCount();

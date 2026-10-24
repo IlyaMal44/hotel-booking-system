@@ -29,6 +29,7 @@ public class RoomQueryServiceImpl implements RoomQueryService {
 
     @Override
     @Transactional(readOnly = true)
+    /** Возвращает номер вместе с названием отеля */
     public RoomResponse get(Long id) {
         return hotelMapper.toResponse(roomRepository.findWithHotelById(id)
                 .orElseThrow(() -> new NotFoundException("Room not found")));
@@ -36,6 +37,7 @@ public class RoomQueryServiceImpl implements RoomQueryService {
 
     @Override
     @Transactional(readOnly = true)
+    /** Список номеров без сортировки по timesBooked, по умолчанию только рабочие */
     public Page<RoomResponse> list(Long hotelId, Boolean available, Pageable pageable) {
         Boolean operational = available == null ? Boolean.TRUE : available;
         return roomRepository.findAll(RoomSpecifications.filter(hotelId, operational), pageable)
@@ -44,6 +46,7 @@ public class RoomQueryServiceImpl implements RoomQueryService {
 
     @Override
     @Transactional(readOnly = true)
+    /** Свободные номера по возрастанию timesBooked, при равенстве по id */
     public List<RoomResponse> recommend(Long hotelId, LocalDate startDate, LocalDate endDate) {
         if (startDate == null && endDate == null) {
             return roomRepository.findAvailableOrderByTimesBooked(hotelId).stream()

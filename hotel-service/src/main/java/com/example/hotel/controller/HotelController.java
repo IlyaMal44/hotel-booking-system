@@ -58,18 +58,21 @@ public class HotelController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    /** Карточка одного отеля */
     public HotelResponse get(@PathVariable Long id) {
         return hotelService.get(id);
     }
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    /** Частичное обновление отеля */
     public HotelResponse update(@PathVariable Long id, @Valid @RequestBody HotelPatchRequest request) {
         return hotelService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    /** Удаление отеля без номеров */
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         hotelService.delete(id);
         return ResponseEntity.noContent().build();

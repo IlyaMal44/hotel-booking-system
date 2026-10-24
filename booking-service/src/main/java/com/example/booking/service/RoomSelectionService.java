@@ -23,6 +23,7 @@ public class RoomSelectionService {
         this.bookingRepository = bookingRepository;
     }
 
+    /** При автоподборе берет свободные номера по возрастанию timesBooked, иначе один roomId */
     public List<Long> candidates(CreateBookingRequest request) {
         if (!Boolean.TRUE.equals(request.autoSelect())) {
             if (request.roomId() == null) {
@@ -42,6 +43,7 @@ public class RoomSelectionService {
         return ids;
     }
 
+    /** Отдает номера отеля без тех, что уже заняты локальными бронями на эти даты */
     public List<RoomView> recommend(CreateBookingRequest request) {
         return hotelPort.recommend(request.hotelId(), request.startDate(), request.endDate()).stream()
                 .filter(room -> !bookingRepository.existsOverlap(room.id(), request.startDate(), request.endDate(), -1L))

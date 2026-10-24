@@ -34,6 +34,7 @@ public class BookingTransactions {
     }
 
     @Transactional
+    /** Под блокировкой номера пишет или обновляет PENDING, если даты свободны */
     public Booking assignRoom(Long bookingId, String username, CreateBookingRequest request, Long roomId) {
         roomGuardCoordinator.ensure(roomId);
         roomGuardRepository.lockByRoomId(roomId).orElseThrow(() -> new ConflictException("Room lock is unavailable"));
@@ -66,6 +67,7 @@ public class BookingTransactions {
     }
 
     @Transactional
+    /** Переводит PENDING в CONFIRMED после ответа отеля */
     public Booking markConfirmed(Long bookingId) {
         Booking booking = required(bookingId);
         if (booking.getStatus() == BookingStatus.CONFIRMED) {
@@ -80,6 +82,7 @@ public class BookingTransactions {
     }
 
     @Transactional
+    /** Переводит бронь в CANCELLED и сразу коммитит это состояние */
     public Booking markCancelled(Long bookingId) {
         Booking booking = required(bookingId);
         if (booking.getStatus() == BookingStatus.CANCELLED) {
@@ -91,6 +94,7 @@ public class BookingTransactions {
     }
 
     @Transactional(readOnly = true)
+    /** Загружает бронь вместе с пользователем или кидает 404 */
     public Booking required(Long bookingId) {
         return bookingRepository.findWithUserById(bookingId).orElseThrow(() -> new NotFoundException("Booking not found"));
     }

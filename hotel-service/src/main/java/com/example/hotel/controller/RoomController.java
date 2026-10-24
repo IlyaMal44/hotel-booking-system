@@ -92,18 +92,21 @@ public class RoomController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    /** Один номер по id */
     public RoomResponse get(@PathVariable Long id) {
         return roomQueryService.get(id);
     }
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    /** Частичное обновление номера */
     public RoomResponse update(@PathVariable Long id, @Valid @RequestBody RoomPatchRequest request) {
         return roomCommandService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    /** Удаление номера без активной блокировки */
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         roomCommandService.delete(id);
         return ResponseEntity.noContent().build();

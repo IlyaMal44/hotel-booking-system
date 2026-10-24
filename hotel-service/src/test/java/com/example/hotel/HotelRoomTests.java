@@ -9,6 +9,7 @@ import com.example.hotel.repository.RoomHoldRepository;
 import com.example.hotel.repository.RoomRepository;
 import com.example.hotel.service.RoomAvailabilityService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -57,11 +58,13 @@ class HotelRoomTests {
     }
 
     @Test
+    @DisplayName("Список отелей без токена закрыт")
     void anonymousListIsUnauthorized() throws Exception {
         mockMvc.perform(get("/api/hotels")).andExpect(status().isUnauthorized());
     }
 
     @Test
+    @DisplayName("Обычный пользователь не создает отель")
     void userCannotCreateHotel() throws Exception {
         mockMvc.perform(post("/api/hotels")
                         .with(userJwt())
@@ -73,6 +76,7 @@ class HotelRoomTests {
     }
 
     @Test
+    @DisplayName("Рекомендация идет от меньшего timesBooked и не показывает номер на ремонте")
     void recommendSortsByTimesBookedThenId() throws Exception {
         Hotel hotel = saveHotel("Plaza");
         saveRoom(hotel, "301", 5);
@@ -89,6 +93,7 @@ class HotelRoomTests {
     }
 
     @Test
+    @DisplayName("Статистику видит только админ, простой считается по нулевому timesBooked")
     void statisticsAreAdminOnlyAndCountIdleRooms() throws Exception {
         Hotel hotel = saveHotel("Plaza");
         saveRoom(hotel, "1", 0);
@@ -104,6 +109,7 @@ class HotelRoomTests {
     }
 
     @Test
+    @DisplayName("Повтор confirm не увеличивает счетчик, пересечение дат дает конфликт")
     void confirmIsIdempotentAndRejectsOverlap() {
         Room room = saveRoom(saveHotel("Plaza"), "10", 0);
         LocalDate start = LocalDate.now().plusDays(5);
@@ -124,6 +130,7 @@ class HotelRoomTests {
     }
 
     @Test
+    @DisplayName("Первый release уменьшает счетчик, второй уже ничего не меняет")
     void releaseIsIdempotent() {
         Room room = saveRoom(saveHotel("Plaza"), "11", 0);
         LocalDate start = LocalDate.now().plusDays(8);
@@ -139,6 +146,7 @@ class HotelRoomTests {
     }
 
     @Test
+    @DisplayName("Два одновременных confirm на одни даты - блокировка только у одного")
     void parallelConfirmsAllowOnlyOneLock() throws Exception {
         Room room = saveRoom(saveHotel("Plaza"), "12", 0);
         LocalDate start = LocalDate.now().plusDays(12);

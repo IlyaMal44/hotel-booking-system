@@ -16,6 +16,7 @@ import com.example.booking.repository.RoomGuardRepository;
 import com.example.booking.repository.UserRepository;
 import com.example.booking.service.BookingSagaService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -91,6 +92,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Регистрация возвращает JWT на час, неверный пароль дает 401")
     void registerAndLoginIssueJwt() throws Exception {
         mockMvc.perform(post("/api/user/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,6 +113,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Отель подтвердил номер - бронь становится CONFIRMED, release не зовем")
     void createBookingConfirmsWhenHotelAccepts() throws Exception {
         String token = register("alice");
 
@@ -127,6 +130,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Повтор того же requestId возвращает ту же бронь и не дергает отель второй раз")
     void sameRequestIdIsIdempotent() throws Exception {
         String token = register("alice");
         UUID requestId = UUID.randomUUID();
@@ -149,6 +153,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Отель недоступен - бронь уходит в CANCELLED и вызывается release")
     void remoteFailureCancelsAndReleases(CapturedOutput output) throws Exception {
         String token = register("alice");
         doThrow(new HotelTransientException("timeout")).when(hotelPort).confirm(any());
@@ -166,6 +171,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Отель ответил 409 - бронь отменяем, release не нужен, слот он не занимал")
     void conflictDoesNotReleaseTheRoom() throws Exception {
         String token = register("alice");
         doThrow(new RoomConflictException("taken")).when(hotelPort).confirm(any());
@@ -182,6 +188,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Пересечение дат с уже подтвержденной бронью отсекаем локально, до вызова отеля")
     void overlappingBookingIsRejectedBeforeHotelCall() throws Exception {
         String token = register("alice");
         User alice = userRepository.findByUsername("alice").orElseThrow();
@@ -206,6 +213,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Автоподбор идет от меньшего timesBooked и пропускает номер, который отель не отдал")
     void autoSelectSkipsBusyRoomAndKeepsTimesBookedOrder() throws Exception {
         String token = register("alice");
         doReturn(List.of(
@@ -230,6 +238,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Чужую бронь пользователь не читает, свою читает")
     void userSeesOnlyOwnBooking() throws Exception {
         String alice = register("alice");
         String bob = register("bob");
@@ -249,6 +258,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("История броней режется по страницам и считает общее число")
     void historyIsPaginated() throws Exception {
         String token = register("alice");
         for (int i = 0; i < 3; i++) {
@@ -269,6 +279,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Дата выезда раньше заезда дает 400, запрос без токена дает 401")
     void invalidDatesAndMissingTokenAreRejected() throws Exception {
         String token = register("alice");
         mockMvc.perform(post("/api/booking")
@@ -283,6 +294,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Обычный пользователь не создает учетки, админ создает")
     void userCannotAdministerAccounts() throws Exception {
         String token = register("alice");
         mockMvc.perform(post("/api/user")
@@ -303,6 +315,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Отмена подтвержденной брони ставит CANCELLED и зовет release")
     void cancelConfirmedBookingReleasesTheHold() throws Exception {
         String token = register("alice");
         String created = mockMvc.perform(post("/api/booking")
@@ -320,6 +333,7 @@ class BookingFlowTests {
     }
 
     @Test
+    @DisplayName("Две параллельные брони одного номера на одни даты - проходит только одна")
     void parallelBookingsOfOneRoomAllowASingleConfirmation() throws Exception {
         register("alice");
         ExecutorService pool = Executors.newFixedThreadPool(2);

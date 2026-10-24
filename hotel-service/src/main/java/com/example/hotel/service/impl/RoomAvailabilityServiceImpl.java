@@ -40,6 +40,7 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
     }
 
     @Override
+    /** Блокирует номер на даты, повтор того же requestId счетчик не увеличивает */
     public ConfirmAvailabilityResponse confirm(Long roomId, ConfirmAvailabilityRequest request) {
         MDC.put(Traces.BOOKING_MDC, String.valueOf(request.bookingId()));
         try {
@@ -53,6 +54,7 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
     }
 
     @Override
+    /** Снимает блокировку по requestId, повторный вызов ничего не меняет */
     public ReleaseResponse release(Long roomId, ReleaseRequest request) {
         if (request.bookingId() != null) {
             MDC.put(Traces.BOOKING_MDC, String.valueOf(request.bookingId()));
@@ -64,6 +66,7 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
         }
     }
 
+    /** Создает новую блокировку, а при гонке requestId возвращает уже существующую */
     private ConfirmAvailabilityResponse confirmNew(Long roomId, ConfirmAvailabilityRequest request) {
         try {
             return availabilityTx.lock(roomId, request);
@@ -74,6 +77,7 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
         }
     }
 
+    /** Ответ на уже обработанный requestId без второго увеличения timesBooked */
     private ConfirmAvailabilityResponse replay(RoomHold hold) {
         Room room = hold.getRoom();
         log.info("bookingId={} requestId={} roomId={} result=IDEMPOTENT_REPLAY status={}",
@@ -97,6 +101,7 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
         }
 
         @Transactional
+        /** Под блокировкой строки номера проверяет пересечение дат и ставит hold */
         public ConfirmAvailabilityResponse lock(Long roomId, ConfirmAvailabilityRequest request) {
             Room room = roomRepository.findByIdForUpdate(roomId)
                     .orElseThrow(() -> new NotFoundException("Room not found"));
@@ -123,6 +128,7 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
         }
 
         @Transactional
+        /** Переводит hold в RELEASED и уменьшает timesBooked один раз */
         public ReleaseResponse release(Long roomId, String requestId) {
             RoomHold hold = roomHoldRepository.findByRequestId(requestId).orElse(null);
             if (hold == null || hold.getStatus() == HoldStatus.RELEASED) {

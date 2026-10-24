@@ -1,5 +1,6 @@
 package com.example.gateway;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +19,7 @@ class GatewayRouteTests {
     private RouteLocator routeLocator;
 
     @Test
+    @DisplayName("В маршрутах шлюза нет отдельных путей на блокировку и release")
     void publishedRoutesDoNotIncludeRoomLockCommands() {
         List<String> routeIds = routeLocator.getRoutes().map(route -> route.getId()).collectList().block();
 

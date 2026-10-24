@@ -34,6 +34,7 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional
+    /** Сохраняет новый отель */
     public HotelResponse create(HotelRequest request) {
         Hotel hotel = new Hotel();
         hotel.setName(request.name().trim());
@@ -46,12 +47,14 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional(readOnly = true)
+    /** Возвращает отель по id */
     public HotelResponse get(Long id) {
         return hotelMapper.toResponse(require(id));
     }
 
     @Override
     @Transactional(readOnly = true)
+    /** Список отелей с фильтром по названию, адресу и звездам */
     public Page<HotelResponse> list(String name, String address, Integer minStars, Pageable pageable) {
         return hotelRepository.findAll(HotelSpecifications.filter(name, address, minStars), pageable)
                 .map(hotelMapper::toResponse);
@@ -59,6 +62,7 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional
+    /** Обновляет только те поля отеля, которые пришли в запросе */
     public HotelResponse update(Long id, HotelPatchRequest request) {
         if (request.name() == null && request.address() == null && request.description() == null && request.stars() == null) {
             throw new BadRequestException("At least one field must be provided");
@@ -81,6 +85,7 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional
+    /** Удаляет отель, если в нем не осталось номеров */
     public void delete(Long id) {
         if (!hotelRepository.existsById(id)) {
             throw new NotFoundException("Hotel not found");

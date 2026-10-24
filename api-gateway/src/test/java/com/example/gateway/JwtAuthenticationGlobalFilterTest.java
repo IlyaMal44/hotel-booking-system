@@ -2,6 +2,7 @@ package com.example.gateway;
 
 import com.example.gateway.config.InternalPaths;
 import com.example.gateway.config.JwtAuthenticationGlobalFilter;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -26,6 +27,7 @@ class JwtAuthenticationGlobalFilterTest {
             new JwtAuthenticationGlobalFilter(jwtDecoder, new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules());
 
     @Test
+    @DisplayName("Защищенный путь без токена получает 401")
     void missingTokenOnProtectedPathIsUnauthorized() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/hotels").build());
 
@@ -36,6 +38,7 @@ class JwtAuthenticationGlobalFilterTest {
     }
 
     @Test
+    @DisplayName("Битый токен не проходит шлюз")
     void invalidTokenIsUnauthorized() {
         when(jwtDecoder.decode("bad")).thenThrow(new JwtException("bad"));
         MockServerWebExchange exchange = MockServerWebExchange.from(
@@ -47,6 +50,7 @@ class JwtAuthenticationGlobalFilterTest {
     }
 
     @Test
+    @DisplayName("Регистрация открыта и токен не проверяет")
     void publicRegisterSkipsTokenCheck() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/api/user/register").build());
         boolean[] called = {false};
@@ -61,6 +65,7 @@ class JwtAuthenticationGlobalFilterTest {
     }
 
     @Test
+    @DisplayName("Нормальный токен пропускаем дальше в сервис")
     void validTokenIsForwarded() {
         Jwt jwt = new Jwt("good", Instant.now(), Instant.now().plusSeconds(60), Map.of("alg", "HS256"), Map.of("sub", "user"));
         when(jwtDecoder.decode("good")).thenReturn(jwt);
@@ -77,6 +82,7 @@ class JwtAuthenticationGlobalFilterTest {
     }
 
     @Test
+    @DisplayName("confirm-availability и release снаружи шлюза не открыты")
     void internalRoomCommandsAreNotPublished() {
         assertThat(InternalPaths.isBlocked("/api/rooms/5/confirm-availability")).isTrue();
         assertThat(InternalPaths.isBlocked("/api/rooms/5/release")).isTrue();

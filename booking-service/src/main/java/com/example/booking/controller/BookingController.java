@@ -75,6 +75,7 @@ public class BookingController {
 
     @GetMapping({"/api/booking/{id}", "/booking/{id}"})
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    /** Бронь по id, чужую обычному пользователю не отдаем */
     public BookingResponse get(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt, Authentication authentication) {
         return bookingQueryService.get(id, jwt.getSubject(), isAdmin(authentication));
     }

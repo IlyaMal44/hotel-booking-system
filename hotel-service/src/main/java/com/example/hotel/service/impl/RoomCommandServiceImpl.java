@@ -40,6 +40,7 @@ public class RoomCommandServiceImpl implements RoomCommandService {
 
     @Override
     @Transactional
+    /** Добавляет номер в отель, номер комнаты внутри отеля уникален */
     public RoomResponse create(RoomRequest request) {
         Hotel hotel = hotelRepository.findById(request.hotelId())
                 .orElseThrow(() -> new NotFoundException("Hotel not found"));
@@ -60,6 +61,7 @@ public class RoomCommandServiceImpl implements RoomCommandService {
 
     @Override
     @Transactional
+    /** Меняет номер комнаты, доступность, вместимость или этаж */
     public RoomResponse update(Long id, RoomPatchRequest request) {
         if (request.number() == null && request.available() == null && request.capacity() == null && request.floor() == null) {
             throw new BadRequestException("At least one field must be provided");
@@ -86,6 +88,7 @@ public class RoomCommandServiceImpl implements RoomCommandService {
 
     @Override
     @Transactional
+    /** Удаляет номер, если на нем нет активной блокировки */
     public void delete(Long id) {
         if (!roomRepository.existsById(id)) {
             throw new NotFoundException("Room not found");

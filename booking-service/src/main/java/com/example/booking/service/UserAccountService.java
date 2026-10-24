@@ -46,12 +46,14 @@ public class UserAccountService {
     }
 
     @Transactional
+    /** Регистрирует пользователя с ролью USER и сразу выдает JWT */
     public AuthResponse register(RegisterRequest request) {
         User user = create(request.username(), request.password(), Role.USER);
         return tokenService.issue(user);
     }
 
     @Transactional(readOnly = true)
+    /** Проверяет логин и пароль и выдает JWT на час */
     public AuthResponse authenticate(AuthRequest request) {
         User user = userRepository.findByUsername(request.username())
                 .filter(found -> passwordEncoder.matches(request.password(), found.getPassword()))
@@ -60,11 +62,13 @@ public class UserAccountService {
     }
 
     @Transactional
+    /** Создает пользователя с ролью, которую передал админ */
     public UserResponse createByAdmin(AdminCreateUserRequest request) {
         return bookingMapper.toResponse(create(request.username(), request.password(), request.role()));
     }
 
     @Transactional
+    /** Меняет пароль и/или роль существующего пользователя */
     public UserResponse update(UpdateUserRequest request) {
         if ((request.password() == null || request.password().isBlank()) && request.role() == null) {
             throw new BadRequestException("Password or role must be provided");
@@ -80,6 +84,7 @@ public class UserAccountService {
     }
 
     @Transactional
+    /** Удаляет пользователя, если это не он сам и у него нет броней */
     public void delete(Long id, String actor) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         if (user.getUsername().equals(actor)) {
@@ -92,10 +97,12 @@ public class UserAccountService {
     }
 
     @Transactional(readOnly = true)
+    /** Возвращает страницу пользователей для админа */
     public Page<UserResponse> list(Pageable pageable) {
         return userRepository.findAll(pageable).map(bookingMapper::toResponse);
     }
 
+    /** Сохраняет пользователя с захешированным паролем */
     private User create(String username, String password, Role role) {
         if (userRepository.existsByUsername(username)) {
             throw new ConflictException("Username is already taken");
