@@ -43,7 +43,7 @@ public class RoomCommandServiceImpl implements RoomCommandService {
     /** Добавляет номер в отель, номер комнаты внутри отеля уникален */
     public RoomResponse create(RoomRequest request) {
         Hotel hotel = hotelRepository.findById(request.hotelId())
-                .orElseThrow(() -> new NotFoundException("Hotel not found"));
+                .orElseThrow(() -> new NotFoundException("Отель не найден"));
         Room room = new Room();
         room.setHotel(hotel);
         room.setNumber(request.number().trim());
@@ -55,7 +55,7 @@ public class RoomCommandServiceImpl implements RoomCommandService {
         try {
             return hotelMapper.toResponse(roomRepository.saveAndFlush(room));
         } catch (DataIntegrityViolationException exception) {
-            throw new ConflictException("Room number already exists in this hotel");
+            throw new ConflictException("Такой номер комнаты в этом отеле уже есть");
         }
     }
 
@@ -64,9 +64,9 @@ public class RoomCommandServiceImpl implements RoomCommandService {
     /** Меняет номер комнаты, доступность, вместимость или этаж */
     public RoomResponse update(Long id, RoomPatchRequest request) {
         if (request.number() == null && request.available() == null && request.capacity() == null && request.floor() == null) {
-            throw new BadRequestException("At least one field must be provided");
+            throw new BadRequestException("Нужно передать хотя бы одно поле");
         }
-        Room room = roomRepository.findWithHotelById(id).orElseThrow(() -> new NotFoundException("Room not found"));
+        Room room = roomRepository.findWithHotelById(id).orElseThrow(() -> new NotFoundException("Номер не найден"));
         if (request.number() != null) {
             room.setNumber(request.number().trim());
         }
@@ -82,7 +82,7 @@ public class RoomCommandServiceImpl implements RoomCommandService {
         try {
             return hotelMapper.toResponse(roomRepository.saveAndFlush(room));
         } catch (DataIntegrityViolationException exception) {
-            throw new ConflictException("Room number already exists in this hotel");
+            throw new ConflictException("Такой номер комнаты в этом отеле уже есть");
         }
     }
 
@@ -91,10 +91,10 @@ public class RoomCommandServiceImpl implements RoomCommandService {
     /** Удаляет номер, если на нем нет активной блокировки */
     public void delete(Long id) {
         if (!roomRepository.existsById(id)) {
-            throw new NotFoundException("Room not found");
+            throw new NotFoundException("Номер не найден");
         }
         if (roomHoldRepository.existsByRoomIdAndStatus(id, HoldStatus.ACTIVE)) {
-            throw new ConflictException("Room has an active hold");
+            throw new ConflictException("На номере висит активная блокировка");
         }
         roomRepository.deleteById(id);
     }

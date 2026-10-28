@@ -33,18 +33,18 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler({HttpMessageNotReadableException.class, IllegalArgumentException.class})
     public ResponseEntity<ErrorDto> handleBadBody(Exception exception, HttpServletRequest request) {
-        return response(400, "Bad Request", "Request body is invalid", request);
+        return response(400, "Bad Request", "Тело запроса не разобрать", request);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorDto> handleDenied(AccessDeniedException exception, HttpServletRequest request) {
-        return response(403, "Forbidden", "Access is denied", request);
+        return response(403, "Forbidden", "Недостаточно прав", request);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDto> handleUnexpected(Exception exception, HttpServletRequest request) {
         log.error("Unhandled error path={}", request.getRequestURI(), exception);
-        return response(500, "Internal Server Error", "Internal error", request);
+        return response(500, "Internal Server Error", "Внутренняя ошибка", request);
     }
 
     public static void checkStay(java.time.LocalDate start, java.time.LocalDate end) {

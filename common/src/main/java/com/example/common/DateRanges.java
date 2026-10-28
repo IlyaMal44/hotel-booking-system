@@ -17,17 +17,17 @@ public final class DateRanges {
      */
     public static void requireStay(LocalDate start, LocalDate end) {
         if (start == null || end == null) {
-            throw new IllegalArgumentException("startDate and endDate are required");
+            throw new IllegalArgumentException("Нужны startDate и endDate");
         }
         if (!end.isAfter(start)) {
-            throw new IllegalArgumentException("endDate must be after startDate");
+            throw new IllegalArgumentException("endDate должен быть позже startDate");
         }
         if (start.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("startDate must not be in the past");
+            throw new IllegalArgumentException("startDate не может быть в прошлом");
         }
         long nights = ChronoUnit.DAYS.between(start, end);
         if (nights > MAX_NIGHTS) {
-            throw new IllegalArgumentException("Stay cannot exceed " + MAX_NIGHTS + " nights");
+            throw new IllegalArgumentException("Нельзя бронировать дольше " + MAX_NIGHTS + " ночей");
         }
     }
 }

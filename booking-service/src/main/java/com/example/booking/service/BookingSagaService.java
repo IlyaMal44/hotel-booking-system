@@ -83,7 +83,7 @@ public class BookingSagaService {
                 if (!Boolean.TRUE.equals(request.autoSelect())) {
                     cancelQuietly(booking.getId());
                     log.info("bookingId={} transition=PENDING->CANCELLED reason=conflict", booking.getId());
-                    throw new ConflictException("Room is already booked for these dates");
+                    throw new ConflictException("Номер уже занят на эти даты");
                 }
             } catch (NotFoundException | BadRequestException exception) {
                 cancelQuietly(booking.getId());
@@ -93,7 +93,7 @@ public class BookingSagaService {
                 cancelQuietly(booking.getId());
                 log.warn("bookingId={} transition=PENDING->CANCELLED reason=hotel_unavailable", booking.getId());
                 compensate(roomId, request.requestId(), booking.getId());
-                throw new HotelTransientException("Booking cancelled: hotel service did not confirm availability", exception);
+                throw new HotelTransientException("Бронь отменена: отель не подтвердил номер", exception);
             } finally {
                 MDC.remove(Traces.BOOKING_MDC);
             }
@@ -102,7 +102,7 @@ public class BookingSagaService {
             cancelQuietly(booking.getId());
             log.info("bookingId={} transition=PENDING->CANCELLED reason=no_room", booking.getId());
         }
-        throw new ConflictException("No available room for the selected dates");
+        throw new ConflictException("На эти даты свободных номеров нет");
     }
 
     /** Отменяет свою бронь и снимает блокировку номера в hotel-service */
@@ -156,12 +156,12 @@ public class BookingSagaService {
         } catch (RoomConflictException exception) {
             cancelQuietly(booking.getId());
             log.info("bookingId={} transition=PENDING->CANCELLED reason=conflict", booking.getId());
-            throw new ConflictException("Room is already booked for these dates");
+            throw new ConflictException("Номер уже занят на эти даты");
         } catch (HotelTransientException exception) {
             cancelQuietly(booking.getId());
             log.warn("bookingId={} transition=PENDING->CANCELLED reason=hotel_unavailable", booking.getId());
             compensate(booking.getRoomId(), UUID.fromString(booking.getRequestId()), booking.getId());
-            throw new HotelTransientException("Booking cancelled: hotel service did not confirm availability", exception);
+            throw new HotelTransientException("Бронь отменена: отель не подтвердил номер", exception);
         }
     }
 
@@ -172,7 +172,7 @@ public class BookingSagaService {
             log.info("bookingId={} compensation=release result=OK roomId={}", bookingId, roomId);
         } catch (HotelTransientException exception) {
             log.error("bookingId={} compensation=release result=FAILED roomId={}", bookingId, roomId, exception);
-            throw new HotelTransientException("Booking was cancelled locally, but room release failed", exception);
+            throw new HotelTransientException("Бронь отменена локально, но снять блокировку номера не вышло", exception);
         }
     }
 
@@ -184,7 +184,7 @@ public class BookingSagaService {
     /** Пускает к брони владельца или админа */
     private void assertOwner(Booking booking, String username, boolean admin) {
         if (!admin && !booking.getUser().getUsername().equals(username)) {
-            throw new com.example.booking.exception.ApiException(HttpStatus.FORBIDDEN, "Booking belongs to another user");
+            throw new com.example.booking.exception.ApiException(HttpStatus.FORBIDDEN, "Бронь принадлежит другому пользователю");
         }
     }
 }

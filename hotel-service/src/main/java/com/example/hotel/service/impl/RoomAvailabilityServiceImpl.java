@@ -83,7 +83,7 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
         log.info("bookingId={} requestId={} roomId={} result=IDEMPOTENT_REPLAY status={}",
                 hold.getBookingId(), hold.getRequestId(), room.getId(), hold.getStatus());
         if (hold.getStatus() != HoldStatus.ACTIVE) {
-            throw new ConflictException("Availability request was already released");
+            throw new ConflictException("Запрос доступности уже был снят");
         }
         return new ConfirmAvailabilityResponse(room.getId(), hold.getRequestId(), hold.getBookingId(), room.getTimesBooked(), true);
     }
@@ -104,13 +104,13 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
         /** Под блокировкой строки номера проверяет пересечение дат и ставит hold */
         public ConfirmAvailabilityResponse lock(Long roomId, ConfirmAvailabilityRequest request) {
             Room room = roomRepository.findByIdForUpdate(roomId)
-                    .orElseThrow(() -> new NotFoundException("Room not found"));
+                    .orElseThrow(() -> new NotFoundException("Номер не найден"));
             if (!room.isAvailable()) {
-                throw new ConflictException("Room is out of service");
+                throw new ConflictException("Номер выведен из эксплуатации");
             }
             if (roomHoldRepository.existsActiveOverlap(roomId, request.startDate(), request.endDate())) {
                 log.info("bookingId={} roomId={} requestId={} result=CONFLICT", request.bookingId(), roomId, request.requestId());
-                throw new ConflictException("Room is already booked for these dates");
+                throw new ConflictException("Номер уже занят на эти даты");
             }
             RoomHold hold = new RoomHold();
             hold.setRoom(room);
@@ -137,10 +137,10 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
                 return new ReleaseResponse(roomId, requestId, false);
             }
             if (!hold.getRoom().getId().equals(roomId)) {
-                throw new BadRequestException("requestId does not belong to this room");
+                throw new BadRequestException("requestId не относится к этому номеру");
             }
             Room room = roomRepository.findByIdForUpdate(roomId)
-                    .orElseThrow(() -> new NotFoundException("Room not found"));
+                    .orElseThrow(() -> new NotFoundException("Номер не найден"));
             hold.setStatus(HoldStatus.RELEASED);
             hold.setReleasedAt(Instant.now());
             room.setTimesBooked(Math.max(0, room.getTimesBooked() - 1));

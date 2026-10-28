@@ -65,7 +65,7 @@ public class HotelServiceImpl implements HotelService {
     /** Обновляет только те поля отеля, которые пришли в запросе */
     public HotelResponse update(Long id, HotelPatchRequest request) {
         if (request.name() == null && request.address() == null && request.description() == null && request.stars() == null) {
-            throw new BadRequestException("At least one field must be provided");
+            throw new BadRequestException("Нужно передать хотя бы одно поле");
         }
         Hotel hotel = require(id);
         if (request.name() != null) {
@@ -88,15 +88,15 @@ public class HotelServiceImpl implements HotelService {
     /** Удаляет отель, если в нем не осталось номеров */
     public void delete(Long id) {
         if (!hotelRepository.existsById(id)) {
-            throw new NotFoundException("Hotel not found");
+            throw new NotFoundException("Отель не найден");
         }
         if (roomRepository.existsByHotelId(id)) {
-            throw new ConflictException("Hotel still has rooms");
+            throw new ConflictException("В отеле еще есть номера");
         }
         hotelRepository.deleteById(id);
     }
 
     private Hotel require(Long id) {
-        return hotelRepository.findById(id).orElseThrow(() -> new NotFoundException("Hotel not found"));
+        return hotelRepository.findById(id).orElseThrow(() -> new NotFoundException("Отель не найден"));
     }
 }

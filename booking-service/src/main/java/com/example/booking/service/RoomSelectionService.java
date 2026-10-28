@@ -27,7 +27,7 @@ public class RoomSelectionService {
     public List<Long> candidates(CreateBookingRequest request) {
         if (!Boolean.TRUE.equals(request.autoSelect())) {
             if (request.roomId() == null) {
-                throw new BadRequestException("roomId is required when autoSelect is false");
+                throw new BadRequestException("При autoSelect=false нужно передать roomId");
             }
             return List.of(request.roomId());
         }
@@ -38,7 +38,7 @@ public class RoomSelectionService {
                 .toList();
         log.info("auto-select requestId={} orderedRoomIds={}", request.requestId(), ids);
         if (ids.isEmpty()) {
-            throw new ConflictException("No available room for the selected dates");
+            throw new ConflictException("На эти даты свободных номеров нет");
         }
         return ids;
     }

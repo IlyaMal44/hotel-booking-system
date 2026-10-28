@@ -32,19 +32,19 @@ public class JwtAuthenticationGlobalFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
         if (InternalPaths.isBlocked(path)) {
-            return write(exchange, HttpStatus.NOT_FOUND, "Not Found", "Route is not published");
+            return write(exchange, HttpStatus.NOT_FOUND, "Not Found", "Маршрут не опубликован");
         }
         if (isPublic(path)) {
             return chain.filter(exchange);
         }
         String header = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (header == null || !header.startsWith("Bearer ")) {
-            return write(exchange, HttpStatus.UNAUTHORIZED, "Unauthorized", "JWT token is missing");
+            return write(exchange, HttpStatus.UNAUTHORIZED, "Unauthorized", "JWT не передан");
         }
         try {
             jwtDecoder.decode(header.substring("Bearer ".length()));
         } catch (JwtException exception) {
-            return write(exchange, HttpStatus.UNAUTHORIZED, "Unauthorized", "JWT token is invalid");
+            return write(exchange, HttpStatus.UNAUTHORIZED, "Unauthorized", "JWT неверный");
         }
         return chain.filter(exchange);
     }

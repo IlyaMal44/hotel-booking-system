@@ -36,9 +36,9 @@ public class BookingQueryService {
     /** Отдает бронь владельцу или админу */
     public BookingResponse get(Long id, String username, boolean admin) {
         Booking booking = bookingRepository.findWithUserById(id)
-                .orElseThrow(() -> new com.example.booking.exception.NotFoundException("Booking not found"));
+                .orElseThrow(() -> new com.example.booking.exception.NotFoundException("Бронь не найдена"));
         if (!admin && !booking.getUser().getUsername().equals(username)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Booking belongs to another user");
+            throw new ApiException(HttpStatus.FORBIDDEN, "Бронь принадлежит другому пользователю");
         }
         return bookingMapper.toResponse(booking);
     }

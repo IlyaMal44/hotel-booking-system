@@ -120,7 +120,7 @@ public class HotelClient implements HotelPort {
             return decorated.get();
         } catch (CallNotPermittedException exception) {
             log.warn("hotel circuit breaker is open");
-            throw new HotelTransientException("Hotel circuit breaker is open", exception);
+            throw new HotelTransientException("Circuit breaker отеля открыт", exception);
         }
     }
 
@@ -131,7 +131,7 @@ public class HotelClient implements HotelPort {
                 try {
                     return action.get();
                 } catch (ResourceAccessException exception) {
-                    throw new HotelTransientException("Hotel call timed out", exception);
+                    throw new HotelTransientException("Отель не ответил вовремя", exception);
                 }
             }, executor));
         } catch (RoomConflictException | NotFoundException | BadRequestException | HotelTransientException exception) {
@@ -150,7 +150,7 @@ public class HotelClient implements HotelPort {
             if (cause instanceof HotelTransientException transientFailure) {
                 throw transientFailure;
             }
-            throw new HotelTransientException("Hotel call failed", cause);
+            throw new HotelTransientException("Вызов отеля не удался", cause);
         }
     }
 
@@ -159,15 +159,15 @@ public class HotelClient implements HotelPort {
         String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
         int status = response.getStatusCode().value();
         if (status == 409) {
-            throw new RoomConflictException(body.isBlank() ? "Room is not available" : body);
+            throw new RoomConflictException(body.isBlank() ? "Номер недоступен" : body);
         }
         if (status == 404) {
-            throw new NotFoundException(body.isBlank() ? "Room not found" : body);
+            throw new NotFoundException(body.isBlank() ? "Номер не найден" : body);
         }
         if (status >= 500) {
-            throw new HotelTransientException("Hotel service error " + status);
+            throw new HotelTransientException("Ошибка hotel-service " + status);
         }
-        throw new BadRequestException(body.isBlank() ? "Hotel rejected the request" : body);
+        throw new BadRequestException(body.isBlank() ? "Отель отклонил запрос" : body);
     }
 
     private HttpHeaders captureHeaders() {

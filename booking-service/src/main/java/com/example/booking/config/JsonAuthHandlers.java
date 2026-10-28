@@ -25,12 +25,12 @@ public class JsonAuthHandlers implements AuthenticationEntryPoint, AccessDeniedH
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-        write(response, request, 401, "Unauthorized", "JWT token is missing or invalid");
+        write(response, request, 401, "Unauthorized", "JWT нет или он неверный");
     }
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
-        write(response, request, 403, "Forbidden", "Access is denied");
+        write(response, request, 403, "Forbidden", "Недостаточно прав");
     }
 
     private void write(HttpServletResponse response, HttpServletRequest request, int status, String error, String message) throws IOException {

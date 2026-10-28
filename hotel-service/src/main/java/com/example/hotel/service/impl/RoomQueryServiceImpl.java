@@ -32,7 +32,7 @@ public class RoomQueryServiceImpl implements RoomQueryService {
     /** Возвращает номер вместе с названием отеля */
     public RoomResponse get(Long id) {
         return hotelMapper.toResponse(roomRepository.findWithHotelById(id)
-                .orElseThrow(() -> new NotFoundException("Room not found")));
+                .orElseThrow(() -> new NotFoundException("Номер не найден")));
     }
 
     @Override
@@ -54,7 +54,7 @@ public class RoomQueryServiceImpl implements RoomQueryService {
                     .toList();
         }
         if (startDate == null || endDate == null) {
-            throw new BadRequestException("startDate and endDate must be provided together");
+            throw new BadRequestException("startDate и endDate нужно передать вместе");
         }
         ApiExceptionHandler.checkStay(startDate, endDate);
         return roomRepository.findAvailableForDates(hotelId, startDate, endDate).stream()

@@ -37,13 +37,13 @@ public class BookingTransactions {
     /** Под блокировкой номера пишет или обновляет PENDING, если даты свободны */
     public Booking assignRoom(Long bookingId, String username, CreateBookingRequest request, Long roomId) {
         roomGuardCoordinator.ensure(roomId);
-        roomGuardRepository.lockByRoomId(roomId).orElseThrow(() -> new ConflictException("Room lock is unavailable"));
+        roomGuardRepository.lockByRoomId(roomId).orElseThrow(() -> new ConflictException("Не удалось заблокировать номер"));
         long excludeId = bookingId == null ? -1L : bookingId;
         if (bookingRepository.existsOverlap(roomId, request.startDate(), request.endDate(), excludeId)) {
-            throw new ConflictException("Room is already booked for these dates");
+            throw new ConflictException("Номер уже занят на эти даты");
         }
         if (bookingId == null) {
-            User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found"));
+            User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
             Booking booking = new Booking();
             booking.setUser(user);
             booking.setRoomId(roomId);
@@ -56,10 +56,10 @@ public class BookingTransactions {
             try {
                 return bookingRepository.saveAndFlush(booking);
             } catch (DataIntegrityViolationException exception) {
-                throw new ConflictException("Request is already being processed");
+                throw new ConflictException("Этот запрос уже обрабатывается");
             }
         }
-        Booking booking = bookingRepository.findWithUserById(bookingId).orElseThrow(() -> new NotFoundException("Booking not found"));
+        Booking booking = bookingRepository.findWithUserById(bookingId).orElseThrow(() -> new NotFoundException("Бронь не найдена"));
         booking.setRoomId(roomId);
         booking.setStatus(BookingStatus.PENDING);
         booking.setUpdatedAt(Instant.now());
@@ -74,7 +74,7 @@ public class BookingTransactions {
             return booking;
         }
         if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new ConflictException("Booking cannot be confirmed from status " + booking.getStatus());
+            throw new ConflictException("Нельзя подтвердить бронь из статуса " + booking.getStatus());
         }
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setUpdatedAt(Instant.now());
@@ -96,6 +96,6 @@ public class BookingTransactions {
     @Transactional(readOnly = true)
     /** Загружает бронь вместе с пользователем или кидает 404 */
     public Booking required(Long bookingId) {
-        return bookingRepository.findWithUserById(bookingId).orElseThrow(() -> new NotFoundException("Booking not found"));
+        return bookingRepository.findWithUserById(bookingId).orElseThrow(() -> new NotFoundException("Бронь не найдена"));
     }
 }

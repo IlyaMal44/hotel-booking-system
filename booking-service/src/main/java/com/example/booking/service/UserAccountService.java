@@ -57,7 +57,7 @@ public class UserAccountService {
     public AuthResponse authenticate(AuthRequest request) {
         User user = userRepository.findByUsername(request.username())
                 .filter(found -> passwordEncoder.matches(request.password(), found.getPassword()))
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid username or password"));
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
         return tokenService.issue(user);
     }
 
@@ -71,9 +71,9 @@ public class UserAccountService {
     /** Меняет пароль и/или роль существующего пользователя */
     public UserResponse update(UpdateUserRequest request) {
         if ((request.password() == null || request.password().isBlank()) && request.role() == null) {
-            throw new BadRequestException("Password or role must be provided");
+            throw new BadRequestException("Нужно передать пароль или роль");
         }
-        User user = userRepository.findById(request.id()).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findById(request.id()).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         if (request.password() != null && !request.password().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.password()));
         }
@@ -86,12 +86,12 @@ public class UserAccountService {
     @Transactional
     /** Удаляет пользователя, если это не он сам и у него нет броней */
     public void delete(Long id, String actor) {
-        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         if (user.getUsername().equals(actor)) {
-            throw new ConflictException("You cannot delete your own account");
+            throw new ConflictException("Нельзя удалить свою учетку");
         }
         if (bookingRepository.existsByUserId(id)) {
-            throw new ConflictException("User still has bookings");
+            throw new ConflictException("У пользователя еще есть брони");
         }
         userRepository.delete(user);
     }
@@ -105,7 +105,7 @@ public class UserAccountService {
     /** Сохраняет пользователя с захешированным паролем */
     private User create(String username, String password, Role role) {
         if (userRepository.existsByUsername(username)) {
-            throw new ConflictException("Username is already taken");
+            throw new ConflictException("Такой логин уже занят");
         }
         User user = new User();
         user.setUsername(username.trim());
