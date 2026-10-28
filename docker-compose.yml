@@ -1,13 +1,17 @@
+# Четыре контейнера, каждый сам по себе. Сначала реестр, потом сервисы, шлюз последним
+# Снаружи: 8761 реестр, 8082 отели, 8081 брони, 8080 шлюз
+# JWT_SECRET один и тот же, иначе шлюз и сервисы не примут чужой токен
+
 services:
   eureka:
     build:
       context: .
       args:
-        MODULE: eureka-server
+        MODULE: eureka-server # модуль Gradle, из него собирается jar
     ports:
       - "8761:8761"
     environment:
-      EUREKA_INSTANCE_HOSTNAME: eureka
+      EUREKA_INSTANCE_HOSTNAME: eureka # имя реестра внутри сети compose
 
   hotel-service:
     build:
@@ -17,11 +21,11 @@ services:
     ports:
       - "8082:8082"
     environment:
-      EUREKA_URI: http://eureka:8761/eureka/
-      EUREKA_INSTANCE_HOSTNAME: hotel-service
+      EUREKA_URI: http://eureka:8761/eureka/ # куда сервис регистрируется
+      EUREKA_INSTANCE_HOSTNAME: hotel-service # по этому имени его найдет booking
       JWT_SECRET: hotel-booking-system-jwt-secret-key-2026
     depends_on:
-      - eureka
+      - eureka # старт после реестра, что реестр уже готов, compose не проверяет
 
   booking-service:
     build:
@@ -43,7 +47,7 @@ services:
       args:
         MODULE: api-gateway
     ports:
-      - "8080:8080"
+      - "8080:8080" # сюда ходит клиент
     environment:
       EUREKA_URI: http://eureka:8761/eureka/
       EUREKA_INSTANCE_HOSTNAME: api-gateway
