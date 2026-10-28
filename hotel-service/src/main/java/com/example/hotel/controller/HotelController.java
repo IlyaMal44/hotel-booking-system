@@ -28,7 +28,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/hotels")
-@Tag(name = "Hotels")
+@Tag(name = "Отели")
 @SecurityRequirement(name = "bearerAuth")
 public class HotelController {
 

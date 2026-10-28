@@ -1,5 +1,5 @@
-# Multi-stage image: compile with a JDK, run with a JRE.
-# Each container is still one independent Spring Boot service.
+# Образ в две стадии: сборка на JDK, запуск на JRE
+# Каждый контейнер - отдельное приложение Spring Boot
 FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /src
 COPY . .

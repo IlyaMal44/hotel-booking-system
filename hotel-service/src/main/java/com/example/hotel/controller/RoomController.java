@@ -38,7 +38,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/rooms")
-@Tag(name = "Rooms")
+@Tag(name = "Номера")
 @SecurityRequirement(name = "bearerAuth")
 public class RoomController {
 

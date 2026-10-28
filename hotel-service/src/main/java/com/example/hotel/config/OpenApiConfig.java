@@ -14,9 +14,9 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Hotel Management Service")
+                        .title("Сервис отелей")
                         .version("v1")
-                        .description("Hotels, rooms, occupancy statistics and the internal room lock used by the booking saga."))
+                        .description("Отели, номера, статистика загруженности и блокировка номера для саги бронирования."))
                 .components(new Components().addSecuritySchemes("bearerAuth",
                         new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }

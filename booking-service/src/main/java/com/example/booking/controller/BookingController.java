@@ -33,7 +33,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@Tag(name = "Bookings")
+@Tag(name = "Бронирования")
 @SecurityRequirement(name = "bearerAuth")
 public class BookingController {
 

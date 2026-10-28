@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/api/user", "/user"})
-@Tag(name = "Users")
+@Tag(name = "Пользователи")
 public class UserController {
 
     private final UserAccountService userAccountService;

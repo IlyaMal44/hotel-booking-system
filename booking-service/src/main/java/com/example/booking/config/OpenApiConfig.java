@@ -14,9 +14,9 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Booking Service")
+                        .title("Сервис бронирования")
                         .version("v1")
-                        .description("Registration, JWT, bookings and the saga that confirms a room with Hotel Service."))
+                        .description("Регистрация, вход по JWT и бронирования. Номер подтверждается через сервис отелей."))
                 .components(new Components().addSecuritySchemes("bearerAuth",
                         new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }
